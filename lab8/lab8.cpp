@@ -4,60 +4,84 @@
 
 using namespace std;
 
-struct Train
+struct Student
 {
-    int Date = 0;
-    string EndPoint = "";
-    int time = 0;
-    int numberOfSeats = 0;
+    string FirstName = "";
+    string LastName = "";
+    int math = 0;
+    int physics = 0;
+    double getAverageScore()
+    {
+        return (math + physics) / 2.;
+    }
 };
+void WriteFile(string file);
+void ReadFile(string file);
+
+int SizeOfStudent = sizeof(Student);
+int arrLengt;
+Student* arr;
 
 int main()
 {
-    // Инициализация:
-    int lastTrainIndex = -1;
+    setlocale(LC_ALL, "ru");
+    cout << "ВВедите длинну списка:" << endl;
+    cin >> arrLengt;
 
-    int numberOfTrains = 0;
+    arr = new Student[arrLengt];
 
-    int Date = 0;
-    string EndPoint = "";
-    int time = 0;
-    int numberOfSeats = 0;
-
-
-    cout << "Date: " << endl; cin >> Date;
-    cout << "Endpoint: " << endl; cin >> EndPoint;
-    cout << "Time: " << endl; cin >> time;
-    cout << "Numbers of seats: " << endl; cin >> numberOfSeats;
-
-    cout << "Enter number of trains: "; cin >> numberOfTrains; cout << "\n";
-    Train* trains = new Train[numberOfTrains];
-
-    // Ввод:
-    for (int i = 0; i < numberOfTrains; i++)
+    for (int i = 0; i < arrLengt; i++)
     {
-
-        cout << i + 1 << ". Date: "; cin >> trains[i].Date;
-        cout << "Seats: "; cin >> trains[i].numberOfSeats; cout << "\n";
-        cout << "Endpoint: "; cin >> trains[i].EndPoint; cout << "\n";
-        cout << "Time: "; cin >> trains[i].time; cout << "\n";
+        cout << "Name:" << endl;
+        cin >> arr[i].FirstName;
+        cout << "LastName:" << endl;
+        cin >> arr[i].LastName;
+        cout << "math:" << endl;
+        cin >> arr[i].math;
+        cout << "physics:" << endl;
+        cin >> arr[i].physics;
     }
-
-    cout << "////////////////////////////////////////////////////////////" << endl;
-    bool flag = false;
-    for (int i = 0; i < numberOfTrains; i++)
+    int ch = 0;
+    cin >> ch;
+    switch (ch)
     {
-        if ((trains[i].Date == Date) && (trains[i].EndPoint==EndPoint) && (trains[i].time <= time) && (trains[i].numberOfSeats >= numberOfSeats))
-        {
-            cout << i + 1 << "Date: " << trains[i].Date << endl;
-            cout << "Seats: " << trains[i].numberOfSeats << endl;
-            cout << "Endpoint: " << trains[i].EndPoint << endl;
-            cout << "Time: " << trains[i].time << endl;
-            flag = true;
-        }
+    case 1:
+        WriteFile("\Zap1");
+        break;
+    case 2:
+        break;
+    case 3:
+        break;
+    case 4:
+        break;
+    default:
+        break;
     }
-    if (flag == false)cout << "Таких поездов нет" << endl;
-    cout << endl;
-    delete[]trains;
     return 0;
+}
+
+void WriteFile(string file)
+{
+    FILE* f;
+    fopen_s(&f, (file + ".txt").c_str(), "w+");
+    //FILE* binf = fopen(file.c_str(), "w+");
+    if (f)
+    {
+        cout << "файл не найден. Будет создан новый!"<< endl;
+        for (int i = 0; i < arrLengt; i++)
+        {
+            fprintf_s(f, "\n %s , %s , %d , %d , %f .", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].math, arr[i].physics, arr[i].getAverageScore());
+
+
+        }
+        fclose(f);
+    }
+    else
+    {
+
+    }
+   
+}
+void ReadFile(string file)
+{
 }
