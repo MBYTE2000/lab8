@@ -165,12 +165,15 @@ void Sort(string file)
         return;
     }
     int group = 1;
+    int score = 0;
     cout << "Введите группу" << endl;
     cin >> group;
+    cout << "Введите балл" << endl;
+    cin >> score;
     for (int i = 0; i < arrLengt; i++)
     {
-        if(arr[i].group == group)
-        fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
+        if(arr[i].group == group && arr[i].getAverageScore()>score)
+            fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
     }
     //fwrite(arr, SizeOfStudent, arrLengt, binf);
     fclose(f);
