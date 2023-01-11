@@ -1,9 +1,9 @@
 ﻿#include <iostream>
 #include <string>
 #include <stdio.h>
+#include <io.h>
 
 using namespace std;
-
 struct Student
 {
     string FirstName = "";
@@ -19,14 +19,14 @@ struct Student
 void CreateFile(string file);
 void ReadFile(string file);
 void AddToFile(string file);
+void EditFile(string file);
 void Sort(string Sortedfile);
 
 int SizeOfStudent = sizeof(Student);
-int arrLengt=10;
 Student* arr;
 
 FILE* f;
-//FILE* binf;
+FILE* binf;
 
 int main()
 {
@@ -34,7 +34,7 @@ int main()
     
     while (true) 
     {
-        cout << "\n1-создание; 2-чтение; 3 -добавить; 4 -сортировка" << endl;
+        cout << "\n1-создание; 2-чтение; 3 -добавить; 4 -изменить; 5 -сортировка" << endl;
         int ch = 0;
         cin >> ch;
         switch (ch)
@@ -49,8 +49,10 @@ int main()
             AddToFile("\Zap1");
             break;
         case 4:
-            Sort("\Zap1");
+            EditFile("\Zap1");
             break;
+        case 5:
+            Sort("\Zap1");
         default:
             break;
         }
@@ -60,19 +62,13 @@ int main()
 
 void CreateFile(string file)
 {
-    /*fopen_s(&f, (file + ".txt").c_str(), "rb+");
-    if (!f) {
-        puts("Файл не обнаружен. Будет создан файл с указанным именем");
-    }
-    else
-        puts("Файл существует и перезаписан");
-    fclose(f);*/
-    cout << "ВВедите длинну списка:" << endl;
-    cin >> arrLengt;
+    int arrLength;
+    cout << "Сколько студентов добавить в файл?" << endl;
+    cin >> arrLength;
 
-    arr = new Student[arrLengt];
+    arr = new Student[arrLength];
 
-    for (int i = 0; i < arrLengt; i++)
+    for (int i = 0; i < arrLength; i++)
     {
         cout << "Name:" << endl;
         cin >> arr[i].FirstName;
@@ -88,19 +84,20 @@ void CreateFile(string file)
 
 
     fopen_s(&f, (file + ".txt").c_str(), "w+");
-    //fopen_s(&binf, file.c_str(), "wb+");
+    fopen_s(&binf, file.c_str(), "wb+");
 
-    if (f == NULL) {
+    if (f == NULL && binf == NULL) {
         puts("\n Create ERROR!");
         return;
     }
 
-    for (int i = 0; i < arrLengt; i++)
+    for (int i = 0; i < arrLength; i++)
     {
         fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
     }
-    //fwrite(arr, SizeOfStudent, arrLengt, binf);
+    fwrite(arr, SizeOfStudent, arrLength, binf);
     fclose(f);
+    fclose(binf);
 }
 void ReadFile(string file)
 {
@@ -117,14 +114,17 @@ void ReadFile(string file)
 }
 void AddToFile(string file)
 {
-    fopen_s(&f, (file + ".txt").c_str(), "r+");
-    if (f)
-    {
-        char cc[256];
-        while ((fgets(cc, 256, f)) != NULL)
-        {
-            printf("%s", cc);
-        }
+    ReadFile("\Zap1");
+    // Вывод пердыдущих дынных.
+
+#pragma region ReadBIN
+        fopen_s(&binf, file.c_str(), "rb+");
+        int arrLength = (_filelength(_fileno(binf)) / SizeOfStudent);
+        fread(arr, SizeOfStudent, arrLength, binf);
+        fclose(binf);
+#pragma endregion
+
+    fopen_s(&binf, file.c_str(), "wb+");
 
         Student newStud;
         cout << "Name:" << endl;
@@ -138,43 +138,120 @@ void AddToFile(string file)
         cout << "physics:" << endl;
         cin >> newStud.physics;
 
-        //
-        Student* buf = new Student[arrLengt+1];
-        for (int i = 0; i < arrLengt; i++)
+        
+
+    //заполнение нового студента
+        fwrite(arr, SizeOfStudent, arrLength, binf); //запись нового студента в бинарный файл
+        fwrite(&newStud, SizeOfStudent, 1, binf);
+        fopen_s(&f, (file + ".txt").c_str(), "w+");
+        for (int i = 0; i < arrLength; i++)
         {
-            buf[i] = arr[i];
+            fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
         }
-        arrLengt++;
-        buf[arrLengt-1] = newStud;
-        delete[] arr;
-        arr = buf;
-        //
 
         fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", newStud.FirstName.c_str(), newStud.LastName.c_str(), newStud.group, newStud.math, newStud.physics, newStud.getAverageScore());
+        //запись нового студента в текстовый файл
+    fclose(f);
+    fclose(binf);
+}
+void EditFile(string file)
+{
+#pragma region ReadBIN
+
+    fopen_s(&binf, file.c_str(), "rb+");
+    if (binf == NULL) {
+        puts("\n ERROR!");
+        return;
     }
+
+    int arrLength = _filelength(_fileno(binf)) / SizeOfStudent;
+    arr = new Student[arrLength];
+    fread(arr, SizeOfStudent, arrLength, binf);
+
+    cout << "\n\n\n";
+    for (int i = 0; i < arrLength; i++)
+    {
+        cout << "студент номер "<< i << endl << endl;
+        cout << "Name: "<< arr[i].FirstName << endl;
+        cout << "LastName: "<< arr[i].LastName << endl;
+        cout << "Group :"<< arr[i].group << endl;
+        cout << "math: "<< arr[i].math << endl;
+        cout << "physics: "<< arr[i].physics << endl;
+        cout << "------------------------------" << endl;
+    }
+    fclose(binf);
+#pragma endregion
+
+    fopen_s(&binf, file.c_str(), "wb+");
+    int n;
+    cout << "Введите номер редактируемого студента" << endl;
+    cin >> n;
+
+    Student newStud;
+    cout << "Name:" << endl;
+    cin >> newStud.FirstName;
+    cout << "LastName:" << endl;
+    cin >> newStud.LastName;
+    cout << "Group:" << endl;
+    cin >> newStud.group;
+    cout << "math:" << endl;
+    cin >> newStud.math;
+    cout << "physics:" << endl;
+    cin >> newStud.physics;
+    //заполнение нового студента
+    arr[n] = newStud;
+
+
+    fwrite(arr, SizeOfStudent, arrLength, binf); //запись нового студента в бинарный файл
+
+    fopen_s(&f, (file + ".txt").c_str(), "w+");
+    for (int i = 0; i < arrLength; i++)
+    {
+        fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
+    }
+    //запись нового студента в текстовый файл
+    fclose(binf);
     fclose(f);
 }
+
 
 void Sort(string file)
 {
+#pragma region ReadBIN
+    fopen_s(&binf, file.c_str(), "rb+");
+    int arrLength = (_filelength(_fileno(binf)) / SizeOfStudent);
+    fread(arr, SizeOfStudent, arrLength, binf);
+    fclose(binf);
+#pragma endregion
     fopen_s(&f, (file + "_sort.txt").c_str(), "w+");
     //fopen_s(&binf, file.c_str(), "wb+");
 
+    double GlobaleAvrScore = 0;
+    int GroupLength = 0;
+
     if (f == NULL) {
-        puts("\n Create ERROR!");
+        puts("\n ERROR!");
         return;
     }
     int group = 1;
-    int score = 0;
     cout << "Введите группу" << endl;
     cin >> group;
-    cout << "Введите балл" << endl;
-    cin >> score;
-    for (int i = 0; i < arrLengt; i++)
+
+    for (int i = 0; i < arrLength; i++)
     {
-        if(arr[i].group == group && arr[i].getAverageScore()>score)
-            fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
+        if (arr[i].group == group) {
+            GlobaleAvrScore += arr[i].getAverageScore();
+            GroupLength++;
+             }
     }
-    //fwrite(arr, SizeOfStudent, arrLengt, binf);
+    GlobaleAvrScore /= GroupLength;
+    for (int i = 0; i < GroupLength; i++)
+    {
+        if (arr[i].getAverageScore()>GlobaleAvrScore) {
+            fprintf_s(f, "\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
+            printf_s("\n %s , %s , %d, %d , %d , %f .\n", arr[i].FirstName.c_str(), arr[i].LastName.c_str(), arr[i].group, arr[i].math, arr[i].physics, arr[i].getAverageScore());
+        }
+    }
     fclose(f);
 }
+
